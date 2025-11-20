@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import type { Movie } from "../../types/movie";
 import { useQuery } from "@tanstack/react-query";
@@ -22,11 +22,18 @@ export default function App() {
     setSelectedMovie(null);
   };
 
-  const {data, isError, isLoading} = useQuery({
+  const {data, isError, isLoading, isSuccess} = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
+    placeholderData: (prev) => prev,
     enabled: query.length > 0,
   });
+
+  useEffect(() =>{
+    if(isSuccess && data && data.results.length === 0){
+      toast.error("No movies found for your request")
+    }
+  }, [isSuccess, data]);
 
   const movies = data?.results ?? [];
   const totalPages = data?.total_pages ?? 0;
